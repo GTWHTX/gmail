@@ -188,7 +188,7 @@ class Worker(threading.Thread):
             cookie  = self.driver.get_cookies()
             data_list.append(username+':'+password+'\n')
             cookie_list.append(cookie+'\n')
-            done_mail.append(self.mail)
+            done_mail.append(self.mail+'\n')
             self.driver.quit()
             print('Поток завершил свою работу')
         except:
@@ -210,6 +210,8 @@ def run(proxy_list, mail_list):
         f.writelines(data_list)
     with open("cookie.txt", "a") as f:
         f.writelines(cookie_list)
+    with open("badmail.txt", "a") as f:
+        f.writelines(done_mail)
     return cookie_list, proxy_list
 
 # def run(proxy_list, mail_list):
