@@ -1,7 +1,7 @@
 from selenium.webdriver.support import expected_conditions as EC
 import seleniumwire.undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
-import random, time, threading, sup
+import random, time, threading, sup, re
 from fake_useragent import UserAgent
 from VakSmsApi import *
 import concurrent.futures
@@ -210,8 +210,16 @@ def run(proxy_list, mail_list):
         f.writelines(data_list)
     with open("cookie.txt", "a") as f:
         f.writelines(cookie_list)
-    with open("badmail.txt", "a") as f:
-        f.writelines(done_mail)
+    for mails in done_mail:
+        pattern = re.compile(re.escape(mails))
+        with open("mail.txt", "r+") as f:
+            lines = f.readlines()
+            f.seek(0)
+            for line in lines:
+                result = pattern.search(line)
+                if result is None:
+                    f.write(line)
+                f.truncate()
     return cookie_list, proxy_list
 
 # def run(proxy_list, mail_list):
