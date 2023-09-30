@@ -38,7 +38,7 @@ class Worker(threading.Thread):
         chrome_options.add_argument("--no-crash-upload")
         chrome_options.add_argument(f"--user-agent={UserAgent(os = 'windows').random}")
         
-        self.driver = uc.Chrome(options = chrome_options, seleniumwire_options = selenium_options, headless = True, no_sandbox = False)
+        self.driver = uc.Chrome(options = chrome_options, seleniumwire_options = selenium_options, headless = True, no_sandbox = False, browser_executable_path = "./chprtbl/chrome")
         
         tz = {'timezoneId': 'Europe/London'}
         self.driver.execute_cdp_cmd('Emulation.setTimezoneOverride', tz)
