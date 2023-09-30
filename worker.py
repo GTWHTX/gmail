@@ -8,6 +8,7 @@ import concurrent.futures
 
 data_list = []
 cookie_list = []
+done_mail = []
 
 class Worker(threading.Thread):
     def __init__(self, name, proxy, mail):
@@ -15,7 +16,8 @@ class Worker(threading.Thread):
         
         self.sms = VakSmsApi(api_key = '2d9ff5a121b542d3a6dc7c124b9c9fc1')
         self.name = name
-        self.mail, self.mailpass = mail.split(':')
+        self.mail = mail
+        self.mail, self.mailpass = self.mail.split(':')
         
         selenium_options = {
             'proxy': {
@@ -38,7 +40,7 @@ class Worker(threading.Thread):
         chrome_options.add_argument("--no-crash-upload")
         chrome_options.add_argument(f"--user-agent={UserAgent(os = 'windows').random}")
         
-        self.driver = uc.Chrome(options = chrome_options, seleniumwire_options = selenium_options, headless = True, no_sandbox = False, browser_executable_path = "./chprtbl/chrome")
+        self.driver = uc.Chrome(options = chrome_options, seleniumwire_options = selenium_options, headless = True, no_sandbox = False, browser_executable_path = "./data/chrome")
         
         tz = {'timezoneId': 'Europe/London'}
         self.driver.execute_cdp_cmd('Emulation.setTimezoneOverride', tz)
@@ -117,9 +119,16 @@ class Worker(threading.Thread):
             time.sleep(60)
             try:
                 answer = self.sms.get_sms(number['idNum'])
+                if answer['smsCode'] == None:
+                    self.sms.change_status(idNum=number['idNum'], status='bad')
+                    print("Не получил ответа по истечении минуты")
+                    self.driver.quit()
+                    return
             except:
                 self.sms.change_status(idNum=number['idNum'], status='bad')
                 print("Не получил ответа по истечении минуты")
+                self.driver.quit()
+                return
             print(answer)
             input_box = self.driver.find_element(By.XPATH, "//input[@id='code']")
             input_box.send_keys(answer['smsCode'])
@@ -179,6 +188,7 @@ class Worker(threading.Thread):
             cookie  = self.driver.get_cookies()
             data_list.append(username+':'+password+'\n')
             cookie_list.append(cookie+'\n')
+            done_mail.append(self.mail)
             self.driver.quit()
             print('Поток завершил свою работу')
         except:
